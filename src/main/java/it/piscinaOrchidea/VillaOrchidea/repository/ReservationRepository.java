@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 public interface ReservationRepository extends JpaRepository<Reservation,Long> {
 
@@ -22,7 +23,7 @@ public interface ReservationRepository extends JpaRepository<Reservation,Long> {
         WHERE r.dataPrenotazione = :date
         AND (r.fasciaOraria = :fascia OR r.fasciaOraria = 'FULL_DAY')
     """)
-    Integer sumPostiPerFascia(
+    Optional<Integer> sumPostiPerFascia(
             @Param("date") LocalDate date,
             @Param("fascia") FasciaOraria fascia
     );
@@ -34,7 +35,7 @@ public interface ReservationRepository extends JpaRepository<Reservation,Long> {
         WHERE r.dataPrenotazione = :date
         AND (r.fasciaOraria = 'FULL_DAY' OR r.fasciaOraria = 'MORNING')
     """)
-    Integer sumPostiMattina(@Param("date") LocalDate date);
+    Optional<Integer> sumPostiMattina(@Param("date") LocalDate date);
 
     // This method sums the number of seats reserved in the afternoon for a specific date ADMIN
     @Query("""
@@ -43,7 +44,7 @@ public interface ReservationRepository extends JpaRepository<Reservation,Long> {
         WHERE r.dataPrenotazione = :date
         AND (r.fasciaOraria = 'FULL_DAY' OR r.fasciaOraria = 'AFTERNOON')
     """)
-    Integer sumPostiPomeriggio(@Param("date") LocalDate date);
+    Optional<Integer> sumPostiPomeriggio(@Param("date") LocalDate date);
 
     // Find all reservations made on a specific date for ADMIN
     List<Reservation> findAllByDataPrenotazione(LocalDate dataPrenotazione);
