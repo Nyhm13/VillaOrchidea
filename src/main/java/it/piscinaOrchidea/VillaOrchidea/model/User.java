@@ -25,6 +25,7 @@ public class User implements UserDetails {
     private String password;
     private String nome;
     private String cognome;
+    private String telefono;
     @Enumerated(EnumType.STRING)
     private Role ruolo;
     @OneToMany(mappedBy = "user")

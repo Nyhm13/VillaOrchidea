@@ -17,6 +17,7 @@ public class Reservation {
     private User user;
     @Enumerated(EnumType.STRING)
     private FasciaOraria fasciaOraria;
+    private Integer numeroPosti;
     private LocalDate dataPrenotazione;
     private String note;
 }
