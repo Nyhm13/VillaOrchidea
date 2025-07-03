@@ -3,11 +3,13 @@ package it.piscinaOrchidea.VillaOrchidea.dto;
 import jakarta.persistence.Column;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
 public class UserDto {
-    @Email(message = "il campo email non puo essere nullo o deve contenere un indirizzo email valido ")
+    @Email(message = "il campo email  deve contenere un indirizzo email valido ")
+    @NotEmpty(message = "il campo email non puo essere nullo ")
     private  String email;
     @NotEmpty(message = "il campo username non puo essere nullo ")
     private  String username;

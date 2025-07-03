@@ -22,7 +22,7 @@ public class CustomExceptionHandler {
 
     @ExceptionHandler(ConflictException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
-    public ApiError notFoundException (ConflictException e){
+    public ApiError handleConflictException (ConflictException e){
         ApiError error= new ApiError();
         error.setMessage(e.getMessage());
         error.setDataErrore(LocalDateTime.now());
@@ -31,7 +31,7 @@ public class CustomExceptionHandler {
 
     @ExceptionHandler(ValidationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ApiError notFoundException (ValidationException e){
+    public ApiError handleValidationException (ValidationException e){
         ApiError error= new ApiError();
         error.setMessage(e.getMessage());
         error.setDataErrore(LocalDateTime.now());
@@ -39,7 +39,7 @@ public class CustomExceptionHandler {
     }
     @ExceptionHandler(EntitaGiaEsistente.class)
     @ResponseStatus(HttpStatus.CONFLICT)
-    public ApiError notFoundException (EntitaGiaEsistente e){
+    public ApiError handleEntitaGiaEsistente (EntitaGiaEsistente e){
         ApiError error= new ApiError();
         error.setMessage(e.getMessage());
         error.setDataErrore(LocalDateTime.now());
@@ -47,7 +47,7 @@ public class CustomExceptionHandler {
     }
     @ExceptionHandler(PostiEsauritiException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
-    public ApiError notFoundException (PostiEsauritiException e){
+    public ApiError handlePostiEsauritiException (PostiEsauritiException e){
         ApiError error= new ApiError();
         error.setMessage(e.getMessage());
         error.setDataErrore(LocalDateTime.now());
@@ -55,10 +55,19 @@ public class CustomExceptionHandler {
     }
     @ExceptionHandler(InvalidOperationException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
-    public ApiError notFoundException (InvalidOperationException e){
+    public ApiError handleInvalidOperationException (InvalidOperationException e){
         ApiError error= new ApiError();
         error.setMessage(e.getMessage());
         error.setDataErrore(LocalDateTime.now());
         return  error;
+    }
+
+    @ExceptionHandler(BadRequestException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ApiError handleBadRequestException(BadRequestException e) {
+        ApiError error = new ApiError();
+        error.setMessage(e.getMessage());
+        error.setDataErrore(LocalDateTime.now());
+        return error;
     }
 }

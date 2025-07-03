@@ -17,15 +17,27 @@ public interface ReservationRepository extends JpaRepository<Reservation,Long> {
 
     // This method sums the number of seats reserved in total by fascia oraria for a specific date ADMIN
 
+//    @Query("""
+//    SELECT COALESCE(SUM(r.numeroPosti), 0)
+//    FROM Reservation r
+//    WHERE r.dataPrenotazione = :date
+//    AND (r.fasciaOraria = :fascia OR r.fasciaOraria = :full)
+//""")
+//    Optional<Integer> sumPostiPerFascia(
+//            @Param("date") LocalDate date,
+//            @Param("fascia") FasciaOraria fascia,
+//            @Param("full") FasciaOraria full
+//    );
+
     @Query("""
-        SELECT COALESCE(SUM(r.numeroPosti), 0)
-        FROM Reservation r
-        WHERE r.dataPrenotazione = :date
-        AND (r.fasciaOraria = :fascia OR r.fasciaOraria = 'FULL_DAY')
-    """)
+    SELECT COALESCE(SUM(r.numeroPosti), 0)
+    FROM Reservation r
+    WHERE r.dataPrenotazione = :date
+    AND r.fasciaOraria IN (:fasce)
+""")
     Optional<Integer> sumPostiPerFascia(
             @Param("date") LocalDate date,
-            @Param("fascia") FasciaOraria fascia
+            @Param("fasce") List<FasciaOraria> fasce
     );
     // This method sums the number of seats reserved in the morning for a specific date ADMIN
 
@@ -33,7 +45,7 @@ public interface ReservationRepository extends JpaRepository<Reservation,Long> {
         SELECT COALESCE(SUM(r.numeroPosti), 0)
         FROM Reservation r
         WHERE r.dataPrenotazione = :date
-        AND (r.fasciaOraria = 'FULL_DAY' OR r.fasciaOraria = 'MORNING')
+        AND (r.fasciaOraria = 'FULLDAY' OR r.fasciaOraria = 'MORNING')
     """)
     Optional<Integer> sumPostiMattina(@Param("date") LocalDate date);
 
@@ -42,7 +54,7 @@ public interface ReservationRepository extends JpaRepository<Reservation,Long> {
         SELECT COALESCE(SUM(r.numeroPosti), 0)
         FROM Reservation r
         WHERE r.dataPrenotazione = :date
-        AND (r.fasciaOraria = 'FULL_DAY' OR r.fasciaOraria = 'AFTERNOON')
+        AND (r.fasciaOraria = 'FULLDAY' OR r.fasciaOraria = 'AFTERNOON')
     """)
     Optional<Integer> sumPostiPomeriggio(@Param("date") LocalDate date);
 
@@ -52,4 +64,10 @@ public interface ReservationRepository extends JpaRepository<Reservation,Long> {
     // Find all reservations made by a specific user for USER
     List<Reservation> findAllByUser(User user);
 
+    @Query("SELECT SUM(r.numeroPosti) FROM Reservation r WHERE r.dataPrenotazione = :data AND r.fasciaOraria IN :fasce AND r.id <> :excludeId")
+    Optional<Integer> sumPostiPerFasciaEscludiId(@Param("data") LocalDate data,
+                                                 @Param("fasce") List<FasciaOraria> fasce,
+                                                 @Param("excludeId") Long excludeId);
+
 }
+

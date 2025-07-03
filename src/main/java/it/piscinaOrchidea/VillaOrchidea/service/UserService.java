@@ -43,14 +43,14 @@ public class UserService {
         user.setUsername(userDto.getUsername());
         user.setPassword(passwordEncoder.encode(userDto.getPassword()));
         User savedUser = userRepository.save(user);
-        sendMail(
-                savedUser.getEmail(),
-                savedUser.getUsername(),
-                savedUser.getNome(),
-                savedUser.getCognome(),
-                savedUser.getId(),
-                userDto.getPassword()
-        );
+//        sendMail(
+//                savedUser.getEmail(),
+//                savedUser.getUsername(),
+//                savedUser.getNome(),
+//                savedUser.getCognome(),
+//                savedUser.getId(),
+//                userDto.getPassword()
+//        );
         return savedUser;
 
     }
@@ -61,6 +61,11 @@ public class UserService {
 
     public User getUser(Long id) throws NotFoundException {
         return userRepository.findById(id).orElseThrow(() -> new NotFoundException("User con ID " + id + " non trovato"));
+    }
+
+    public User getUserByUsername(String username) throws NotFoundException {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new NotFoundException("Utente con username " + username + " non trovato"));
     }
 
     public User updateUser(Long id, UserDto userDto) throws NotFoundException {

@@ -2,7 +2,9 @@ package it.piscinaOrchidea.VillaOrchidea.service;
 
 import it.piscinaOrchidea.VillaOrchidea.dto.ReservationDto;
 import it.piscinaOrchidea.VillaOrchidea.enumerations.FasciaOraria;
+import it.piscinaOrchidea.VillaOrchidea.enumerations.Role;
 import it.piscinaOrchidea.VillaOrchidea.exceptions.BadRequestException;
+import it.piscinaOrchidea.VillaOrchidea.exceptions.InvalidOperationException;
 import it.piscinaOrchidea.VillaOrchidea.exceptions.NotFoundException;
 import it.piscinaOrchidea.VillaOrchidea.model.Reservation;
 import it.piscinaOrchidea.VillaOrchidea.model.User;
@@ -15,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -29,7 +32,7 @@ public class ReservationService {
     private JavaMailSenderImpl javaMailSender;
 
 
-    private static final int POSTI_TOTALI =50;
+    private static final int POSTI_TOTALI =10;
 
     public Reservation saveReservation(ReservationDto reservationDto,String username) throws NotFoundException, BadRequestException {
         User user = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException("Utente non trovato"));
@@ -67,7 +70,7 @@ public class ReservationService {
         reservation.setNote(reservationDto.getNote());
 
         Reservation savedReservation = reservationRepository.save(reservation);
-        sendMail(user, savedReservation, "creata");
+//        sendMail(user, savedReservation, "creata");
         return savedReservation;
 
     }
@@ -88,15 +91,22 @@ public class ReservationService {
         User user = userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException("Utente con username " + username + " non trovato"));
 
         return reservationRepository.findAllByUser(user);
-
     }
 
-    public void deleteReservation(Long id) throws NotFoundException {
+    public void deleteReservation(Long id,String username) throws NotFoundException {
         Reservation reservation=reservationRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Prenotazione non trovata con id " + id));
 
         User user = reservation.getUser();
-        sendMail(user, reservation, "cancellata");
+
+        User caller = userRepository.findByUsername(username)
+                .orElseThrow(() -> new NotFoundException("Utente non trovato"));
+
+        if (!user.getUsername().equals(caller.getUsername()) && caller.getRuolo() != Role.ADMIN) {
+            throw new InvalidOperationException("Non puoi cancellare la prenotazione di un altro utente!");
+        }
+
+//        sendMail(user, reservation, "cancellata");
 
         reservationRepository.delete(reservation);
     }
@@ -108,6 +118,9 @@ public class ReservationService {
                         " non trovato"));
         Reservation existing= reservationRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Prenotazione con id " + id + " non trovata"));
+        if (!existing.getUser().getUsername().equals(user.getUsername()) && user.getRuolo() != Role.ADMIN) {
+            throw new InvalidOperationException("Non puoi modificare la prenotazione di un altro utente!");
+        }
         LocalDate data =reservationDto.getDataPrenotazione();
 
         if(data.getDayOfWeek()== DayOfWeek.MONDAY){
@@ -124,43 +137,75 @@ public class ReservationService {
             }
         }
 
-        int occupati= calcolaPostiOccupati(data,reservationDto.getFasciaOraria());
-        occupati-= existing.getNumeroPosti();
-        int disponibili=POSTI_TOTALI-occupati;
 
-        if (reservationDto.getNumeroPosti()>disponibili){
-            throw  new BadRequestException(  "Posti insufficienti: hai richiesto " + reservationDto.getNumeroPosti() +
-                    ", ma sono disponibili solo " + disponibili + " posti per questa fascia oraria.");
+        // ✅ Calcola le fasce coperte reali
+        List<FasciaOraria> nuoveFasce = fasceCoperte(reservationDto.getFasciaOraria());
+
+        // ✅ Calcola posti occupati escludendo la prenotazione corrente
+        int occupati = calcolaPostiOccupatiUpdate(data, reservationDto.getFasciaOraria(), existing.getId());
+        int disponibili = POSTI_TOTALI - occupati;
+
+        System.out.println("Occupati (excl. ID): " + occupati);
+        System.out.println("Disponibili: " + disponibili);
+
+        if (reservationDto.getNumeroPosti() > disponibili) {
+            throw new BadRequestException(
+                    "Posti insufficienti: hai richiesto " + reservationDto.getNumeroPosti() +
+                            ", ma sono disponibili solo " + disponibili + " posti per questa fascia oraria."
+            );
         }
+
         existing.setNumeroPosti(reservationDto.getNumeroPosti());
         existing.setFasciaOraria(reservationDto.getFasciaOraria());
         existing.setDataPrenotazione(data);
         existing.setNote(reservationDto.getNote());
 
         Reservation updated = reservationRepository.save(existing);
-        sendMail(user, updated, "modificata");
-        return updated;
 
+//        sendMail(user, updated, "modificata");
+
+        return updated;
     }
 
 
 
     private int calcolaPostiOccupati(LocalDate data, FasciaOraria fasciaOraria) {
-        switch (fasciaOraria) {
-            case FULL_DAY:
-                return reservationRepository.sumPostiPerFascia(data, FasciaOraria.FULL_DAY).orElse(0)
-                        + reservationRepository.sumPostiPerFascia(data, FasciaOraria.MORNING).orElse(0)
-                        + reservationRepository.sumPostiPerFascia(data, FasciaOraria.AFTERNOON).orElse(0);
-            case MORNING:
-                return reservationRepository.sumPostiPerFascia(data, FasciaOraria.FULL_DAY).orElse(0)
-                        + reservationRepository.sumPostiPerFascia(data, FasciaOraria.MORNING).orElse(0);
-            case AFTERNOON:
-                return reservationRepository.sumPostiPerFascia(data, FasciaOraria.FULL_DAY).orElse(0)
-                        + reservationRepository.sumPostiPerFascia(data, FasciaOraria.AFTERNOON).orElse(0);
-            default:
-                throw new BadRequestException("Fascia oraria non valida");
+        int fullDay = reservationRepository.sumPostiPerFascia(data, List.of(FasciaOraria.FULLDAY)).orElse(0);
+        int morning = reservationRepository.sumPostiPerFascia(data, List.of(FasciaOraria.MORNING)).orElse(0);
+        int afternoon = reservationRepository.sumPostiPerFascia(data, List.of(FasciaOraria.AFTERNOON)).orElse(0);
+
+        if (fasciaOraria == FasciaOraria.FULLDAY) {
+            int totalMorning = fullDay + morning;
+            int totalAfternoon = fullDay + afternoon;
+            return Math.max(totalMorning, totalAfternoon);
+        } else if (fasciaOraria == FasciaOraria.MORNING) {
+            return fullDay + morning;
+        } else if (fasciaOraria == FasciaOraria.AFTERNOON) {
+            return fullDay + afternoon;
+        } else {
+            throw new BadRequestException("Fascia oraria non valida");
         }
     }
+
+    private int calcolaPostiOccupatiUpdate(LocalDate data, FasciaOraria fasciaOraria, Long excludeId) {
+        int fullDay = reservationRepository.sumPostiPerFasciaEscludiId(data, List.of(FasciaOraria.FULLDAY), excludeId).orElse(0);
+        int morning = reservationRepository.sumPostiPerFasciaEscludiId(data, List.of(FasciaOraria.MORNING), excludeId).orElse(0);
+        int afternoon = reservationRepository.sumPostiPerFasciaEscludiId(data, List.of(FasciaOraria.AFTERNOON), excludeId).orElse(0);
+
+        if (fasciaOraria == FasciaOraria.FULLDAY) {
+            int totalMorning = fullDay + morning;
+            int totalAfternoon = fullDay + afternoon;
+            return Math.max(Math.max(fullDay, totalMorning), totalAfternoon);
+        } else if (fasciaOraria == FasciaOraria.MORNING) {
+            return fullDay + morning;
+        } else if (fasciaOraria == FasciaOraria.AFTERNOON) {
+            return fullDay + afternoon;
+        } else {
+            throw new BadRequestException("Fascia oraria non valida");
+        }
+    }
+
+
 
     private void sendMail(User user, Reservation reservation, String azione) {
         SimpleMailMessage message = new SimpleMailMessage();
@@ -179,5 +224,14 @@ public class ReservationService {
         message.setText(testo);
 
         javaMailSender.send(message);
+    }
+
+
+    private List<FasciaOraria> fasceCoperte(FasciaOraria fasciaOraria) {
+        return switch (fasciaOraria) {
+            case FULLDAY -> List.of(FasciaOraria.FULLDAY, FasciaOraria.MORNING, FasciaOraria.AFTERNOON);
+            case MORNING -> List.of(FasciaOraria.MORNING, FasciaOraria.FULLDAY);
+            case AFTERNOON -> List.of(FasciaOraria.AFTERNOON, FasciaOraria.FULLDAY);
+        };
     }
 }
