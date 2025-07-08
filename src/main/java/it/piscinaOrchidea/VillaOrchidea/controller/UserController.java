@@ -35,6 +35,12 @@ public class UserController {
     public List<User> getAllUsers(){
         return userService.getAllUsers();
     }
+    @GetMapping("/me")
+    @PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+    public User getMyProfile(Principal principal) throws NotFoundException {
+        String username = principal.getName();
+        return userService.getUserByUsername(username);
+    }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('ADMIN')")
