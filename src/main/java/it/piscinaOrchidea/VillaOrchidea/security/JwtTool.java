@@ -26,8 +26,10 @@ public class JwtTool {
     public String createToken(User user){
 
         return Jwts.builder().issuedAt(new Date()).expiration(new Date(System.currentTimeMillis()+durata)).
-                subject(user.getId()+"").
-                signWith(Keys.hmacShaKeyFor(chiaveSegreta.getBytes())).compact();
+                subject(user.getId()+"")
+                .claim("ruolo",user.getRuolo().name())
+                .signWith(Keys.hmacShaKeyFor(chiaveSegreta.getBytes()))
+                .compact();
     }
 
     public void validateToken(String token){
