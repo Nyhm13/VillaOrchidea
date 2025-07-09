@@ -18,7 +18,9 @@ import org.springframework.stereotype.Service;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class ReservationService {
@@ -233,5 +235,19 @@ public class ReservationService {
             case MORNING -> List.of(FasciaOraria.MORNING, FasciaOraria.FULLDAY);
             case AFTERNOON -> List.of(FasciaOraria.AFTERNOON, FasciaOraria.FULLDAY);
         };
+    }
+    //------------------- test----------------
+    public Map<FasciaOraria,Integer> getAvailability(LocalDate data){
+        Map<FasciaOraria,Integer> disponibilita= new HashMap<>();
+
+        int fullDayOccupati = calcolaPostiOccupati(data, FasciaOraria.FULLDAY);
+        int morningOccupati = calcolaPostiOccupati(data, FasciaOraria.MORNING);
+        int afternoonOccupati = calcolaPostiOccupati(data, FasciaOraria.AFTERNOON);
+
+        disponibilita.put(FasciaOraria.FULLDAY, POSTI_TOTALI - fullDayOccupati);
+        disponibilita.put(FasciaOraria.MORNING, POSTI_TOTALI - morningOccupati);
+        disponibilita.put(FasciaOraria.AFTERNOON, POSTI_TOTALI - afternoonOccupati);
+
+        return disponibilita;
     }
 }

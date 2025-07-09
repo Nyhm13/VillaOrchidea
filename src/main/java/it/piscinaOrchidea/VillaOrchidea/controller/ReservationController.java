@@ -1,6 +1,7 @@
 package it.piscinaOrchidea.VillaOrchidea.controller;
 
 import it.piscinaOrchidea.VillaOrchidea.dto.ReservationDto;
+import it.piscinaOrchidea.VillaOrchidea.enumerations.FasciaOraria;
 import it.piscinaOrchidea.VillaOrchidea.exceptions.NotFoundException;
 import it.piscinaOrchidea.VillaOrchidea.exceptions.ValidationException;
 import it.piscinaOrchidea.VillaOrchidea.model.Reservation;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.security.Principal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/reservations")
@@ -70,6 +72,12 @@ public class ReservationController {
     @PreAuthorize("hasAnyAuthority('USER','ADMIN')")
     public void deleteReservation(@PathVariable Long id,Principal principal) throws NotFoundException {
         reservationService.deleteReservation(id, principal.getName());
+    }
+
+    @GetMapping("/availability")
+    @PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+    public Map<FasciaOraria, Integer> getAvailability(@RequestParam("data") LocalDate data) {
+        return reservationService.getAvailability(data);
     }
 
 }
