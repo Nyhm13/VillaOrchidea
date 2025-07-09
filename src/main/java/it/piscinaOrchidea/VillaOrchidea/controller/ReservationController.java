@@ -73,6 +73,7 @@ public class ReservationController {
     public void deleteReservation(@PathVariable Long id,Principal principal) throws NotFoundException {
         reservationService.deleteReservation(id, principal.getName());
     }
+    //-------testing-----
 
     @GetMapping("/availability")
     @PreAuthorize("hasAnyAuthority('USER','ADMIN')")
