@@ -77,7 +77,7 @@ public class ReservationController {
 
     @GetMapping("/availability")
     @PreAuthorize("hasAnyAuthority('USER','ADMIN')")
-    public Map<FasciaOraria, Integer> getAvailability(@RequestParam("data") LocalDate data) {
+    public Map<FasciaOraria, Integer> getAvailability(@RequestParam("date") LocalDate data) {
         return reservationService.getAvailability(data);
     }
 
