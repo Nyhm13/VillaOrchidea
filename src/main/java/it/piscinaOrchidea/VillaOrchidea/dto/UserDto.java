@@ -21,7 +21,8 @@ public class UserDto {
     @NotEmpty(message = "il campo cognome non puo essere nullo ")
     private String cognome;
     @NotEmpty(message = "il campo telefono  non puo essere nullo ")
-    @Pattern(regexp = "^\\+39\\s?\\d{9,10}$",
+    @Pattern(regexp = "^\\+\\d{1,4}\\s?\\d{6,15}$",
+//            regexp = "^\\+39\\s?\\d{9,10}$",
             message = "Il numero di telefono deve iniziare con +39 e avere 9-10 cifre")
     private String telefono;
 }
