@@ -4,6 +4,7 @@ import jakarta.persistence.Column;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 
 @Data
@@ -20,5 +21,7 @@ public class UserDto {
     @NotEmpty(message = "il campo cognome non puo essere nullo ")
     private String cognome;
     @NotEmpty(message = "il campo telefono  non puo essere nullo ")
+    @Pattern(regexp = "^\\+39\\s?\\d{9,10}$",
+            message = "Il numero di telefono deve iniziare con +39 e avere 9-10 cifre")
     private String telefono;
 }

@@ -140,10 +140,10 @@ public class ReservationService {
         }
 
 
-        // ✅ Calcola le fasce coperte reali
+        //  Calcola le fasce coperte reali
         List<FasciaOraria> nuoveFasce = fasceCoperte(reservationDto.getFasciaOraria());
 
-        // ✅ Calcola posti occupati escludendo la prenotazione corrente
+        //  Calcola posti occupati escludendo la prenotazione corrente
         int occupati = calcolaPostiOccupatiUpdate(data, reservationDto.getFasciaOraria(), existing.getId());
         int disponibili = POSTI_TOTALI - occupati;
 
