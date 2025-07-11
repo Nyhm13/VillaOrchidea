@@ -1,6 +1,7 @@
 package it.piscinaOrchidea.VillaOrchidea.controller;
 
 import it.piscinaOrchidea.VillaOrchidea.dto.UserDto;
+import it.piscinaOrchidea.VillaOrchidea.exceptions.BadRequestException;
 import it.piscinaOrchidea.VillaOrchidea.exceptions.EntitaGiaEsistente;
 import it.piscinaOrchidea.VillaOrchidea.exceptions.NotFoundException;
 import it.piscinaOrchidea.VillaOrchidea.exceptions.ValidationException;
@@ -50,7 +51,7 @@ public class UserController {
 
     @PutMapping("/me")
     @PreAuthorize("hasAnyAuthority('USER','ADMIN')")
-    public User updateMyProfile(@RequestBody @Validated UserDto userDto, Principal principal,BindingResult bindingResult) throws NotFoundException, ValidationException {
+    public User updateMyProfile(@RequestBody @Validated UserDto userDto, Principal principal,BindingResult bindingResult) throws NotFoundException, ValidationException, EntitaGiaEsistente {
         if (bindingResult.hasErrors()){
             throw  new ValidationException(bindingResult.getAllErrors().stream().map(objectError -> objectError.getDefaultMessage()).reduce("",(e, s)->e+s));
         }
