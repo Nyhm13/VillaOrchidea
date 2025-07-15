@@ -72,7 +72,7 @@ public class ReservationService {
         reservation.setNote(reservationDto.getNote());
 
         Reservation savedReservation = reservationRepository.save(reservation);
-//        sendMail(user, savedReservation, "creata");
+        sendMail(user, savedReservation, "creata");
         return savedReservation;
 
     }
@@ -108,7 +108,7 @@ public class ReservationService {
             throw new InvalidOperationException("Non puoi cancellare la prenotazione di un altro utente!");
         }
 
-//        sendMail(user, reservation, "cancellata");
+        sendMail(user, reservation, "cancellata");
 
         reservationRepository.delete(reservation);
     }
@@ -164,7 +164,7 @@ public class ReservationService {
 
         Reservation updated = reservationRepository.save(existing);
 
-//        sendMail(user, updated, "modificata");
+        sendMail(user, updated, "modificata");
 
         return updated;
     }

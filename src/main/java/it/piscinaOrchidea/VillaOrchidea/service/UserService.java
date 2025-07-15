@@ -48,14 +48,14 @@ public class UserService {
         user.setUsername(userDto.getUsername());
         user.setPassword(passwordEncoder.encode(userDto.getPassword()));
         User savedUser = userRepository.save(user);
-//        sendMail(
-//                savedUser.getEmail(),
-//                savedUser.getUsername(),
-//                savedUser.getNome(),
-//                savedUser.getCognome(),
-//                savedUser.getId(),
-//                userDto.getPassword()
-//        );
+        sendMail(
+                savedUser.getEmail(),
+                savedUser.getUsername(),
+                savedUser.getNome(),
+                savedUser.getCognome(),
+                savedUser.getId(),
+                userDto.getPassword()
+        );
         return savedUser;
 
     }
@@ -102,7 +102,7 @@ public class UserService {
         
         User updatedUser = userRepository.save(userDaAggiornare);
 
-//        sendMailAggiornamento(updatedUser);
+        sendMailAggiornamento(updatedUser);
 
         return updatedUser;
     }
