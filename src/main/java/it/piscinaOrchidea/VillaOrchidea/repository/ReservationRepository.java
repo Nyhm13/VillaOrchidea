@@ -15,19 +15,7 @@ public interface ReservationRepository extends JpaRepository<Reservation,Long> {
 
     boolean existsByUserAndDataPrenotazione(User user, LocalDate dataPrenotazione);
 
-    // This method sums the number of seats reserved in total by fascia oraria for a specific date ADMIN
 
-//    @Query("""
-//    SELECT COALESCE(SUM(r.numeroPosti), 0)
-//    FROM Reservation r
-//    WHERE r.dataPrenotazione = :date
-//    AND (r.fasciaOraria = :fascia OR r.fasciaOraria = :full)
-//""")
-//    Optional<Integer> sumPostiPerFascia(
-//            @Param("date") LocalDate date,
-//            @Param("fascia") FasciaOraria fascia,
-//            @Param("full") FasciaOraria full
-//    );
 
     @Query("""
     SELECT COALESCE(SUM(r.numeroPosti), 0)
